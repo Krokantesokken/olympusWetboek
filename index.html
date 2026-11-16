@@ -14,7 +14,7 @@
       <div class="brand-logo">Ω</div>
       <div class="brand-text">
         <h2>OLYMPUS RP</h2>
-        <span>Wetboek & Regelgeving</span>
+        <span>Officieel Wetboek</span>
       </div>
     </div>
 
@@ -32,9 +32,9 @@
     <header class="topbar">
       <button class="mobile-menu-btn" onclick="toggleSidebar()">☰ Menu</button>
       <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Zoek op artikelnummer of trefwoord..." />
+        <input type="text" id="searchInput" placeholder="Zoek op artikelnummer of trefwoord (bijv. 302, wapen, overval)..." />
       </div>
-      <div class="version-tag">v1.0 • TEST MODUS</div>
+      <div class="version-tag">v1.2 • OFFICIEEL</div>
     </header>
 
     <main class="content-area">
@@ -42,6 +42,9 @@
         <h1 id="pageTitle">Overzicht Alle Wetten</h1>
         <p id="pageDesc">Selecteer een hoofdstuk in het menu links of filter op subcategorie.</p>
       </div>
+
+      <!-- INLEIDING / ALGEMENE TOELICHTING BLOK -->
+      <div id="introBox" class="intro-box" style="display: none;"></div>
 
       <div class="sub-tabs" id="subTabs"></div>
 
@@ -75,47 +78,182 @@
     // HOOFDMENU STRUCTUUR
     const menuStructuur = [
       {
-        groep: "Algemeen",
+        groep: "Overzicht & Bepalingen",
         items: [
-          { id: "Alles", naam: "Alle Artikelen", desc: "Volledig overzicht van alle geldende artikelen in Olympus." },
-          { id: "Serverregels", naam: "Serverregels (OOC)", desc: "Algemene gedragsregels en roleplay-richtlijnen voor alle spelers." }
+          {
+            id: "Alles",
+            naam: "Alle Artikelen",
+            desc: "Volledig overzicht van alle geldende wetsartikelen en strafmaten in Olympus."
+          },
+          {
+            id: "Strafbepaling",
+            naam: "Strafbepaling (Art. 1 - 6)",
+            desc: "Algemene regels omtrent strafoplegging, rechten van verdachten, strafblad en verjaring.",
+            inleiding: `
+              <h3>Algemene Richtlijnen Strafbepaling</h3>
+              <p>Bij het bepalen van een straf wordt gekeken naar de ernst van het strafbare feit, de omstandigheden waaronder het feit is gepleegd en het eventuele strafblad van de verdachte.</p>
+              <p>Indien sprake is van meerdere strafbare feiten mogen straffen en boetes worden samengevoegd. De bevoegde ambtenaar behoudt het recht om binnen redelijke grenzen af te wijken van de standaardstraf indien de situatie daar aanleiding toe geeft.</p>
+              <div class="intro-grid">
+                <div class="intro-subcard danger-border">
+                  <strong>Verzwarende omstandigheden</strong>
+                  <p>Kunnen leiden tot een verhoging van de straf. Hieronder vallen onder andere recidive, geweld tegen hulpdiensten, het gebruik van zware wapens, georganiseerde criminaliteit en het plegen van strafbare feiten in groepsverband.</p>
+                </div>
+                <div class="intro-subcard success-border">
+                  <strong>Verzachtende omstandigheden</strong>
+                  <p>Kunnen leiden tot een vermindering van de straf. Hieronder vallen onder andere volledige medewerking aan het onderzoek, een vrijwillige bekentenis, een blanco strafblad en het voorkomen van verdere schade.</p>
+                </div>
+              </div>
+              <p class="intro-footer">De uiteindelijke straf bestaat uit een combinatie van gevangenisstraf, geldboetes, inbeslagname van goederen en eventuele aanvullende maatregelen zoals vergunningintrekkingen of gebiedsverboden.</p>
+            `
+          }
         ]
       },
       {
-        groep: "Wetboeken (IC)",
+        groep: "Wetboek van Strafrecht",
         items: [
-          { id: "APV", naam: "APV & Openbare Orde", desc: "Algemene Plaatselijke Verordening binnen de stadsgrenzen van Olympus." },
-          { id: "Verkeerswet", naam: "Verkeerswet", desc: "Regels omtrent voertuigen, snelheid, rijbewijzen en verkeersveiligheid." },
-          { id: "Strafrecht", naam: "Wetboek van Strafrecht", desc: "Geweldsdelicten, vermogensdelicten en misdrijven tegen burgers of overheid." },
-          { id: "Wapens & Drugs", naam: "Wapen- & Drugswet", desc: "Wetgeving rondom verboden wapens, munitie en verdovende middelen." }
-        ]
-      },
-      {
-        groep: "Overheid & Hulpdiensten",
-        items: [
-          { id: "Hulpdiensten", naam: "Politie, Ambulance & ANWB", desc: "Bevoegdheden, protocollen en bescherming van hulpdiensten." }
+          {
+            id: "Openbare Orde",
+            naam: "Openbare Orde & Gezag",
+            desc: "Delicten tegen de openbare orde, ambtenaren in functie en brandstichting."
+          },
+          {
+            id: "Geweld & Vrijheid",
+            naam: "Geweld, Leven & Vrijheid",
+            desc: "Misdrijven tegen de persoonlijke vrijheid, mishandeling en levensdelicten."
+          },
+          {
+            id: "Vermogen & Overvallen",
+            naam: "Vermogen & Overvallen",
+            desc: "Diefstal, oplichting, vernieling, witwassen en overvallen."
+          },
+          {
+            id: "Wapens, Drugs & Organisatie",
+            naam: "Wapens, Drugs & Organisatie",
+            desc: "Illegaal wapenbezit, verdovende middelen, criminele organisaties en terrorisme."
+          },
+          {
+            id: "Verkeer",
+            naam: "Verkeersdelicten",
+            desc: "Strafbare feiten met betrekking tot gevaarlijk rijgedrag op de openbare weg."
+          }
         ]
       }
     ];
 
-    // ARTIKELEN (ALLEMAAL OP TEST GEZET)
+    // ARTIKELEN (ALLE STRAFFEN ZIJN MET 20% VERMINDERD)
     const artikelen = [
-      { id: "Art. 1", cat: "Serverregels", sub: "Algemeen", titel: "TEST", desc: "TEST", boete: 0, cel: 0 },
-      { id: "Art. 2", cat: "Serverregels", sub: "Roleplay", titel: "TEST", desc: "TEST", boete: 0, cel: 0 },
+      // STRAFBAPALING (Art. 1 - 6)
+      {
+        id: "Artikel 1",
+        cat: "Strafbepaling",
+        sub: "Strafoplegging",
+        titel: "Voorafgaand aan het bepalen van de straf",
+        desc: "Voordat een straf wordt opgelegd dient de bevoegde ambtenaar alle relevante omstandigheden van de zaak in overweging te nemen. Hierbij wordt gekeken naar de aard van het strafbare feit, de ernst van de gevolgen, de betrokkenheid van de verdachte en eventuele verzwarende of verzachtende omstandigheden.",
+        boete: 0,
+        cel: 0,
+        informatief: true
+      },
+      {
+        id: "Artikel 2",
+        cat: "Strafbepaling",
+        sub: "Rechten & Plichten",
+        titel: "Rechten",
+        desc: "Iedere verdachte heeft recht op een eerlijke behandeling en dient op de hoogte gesteld te worden van de reden van zijn aanhouding. Daarnaast heeft iedere verdachte het recht om gebruik te maken van zijn zwijgrecht en bezwaar aan te tekenen tegen besluiten die volgens hem onterecht zijn genomen.",
+        boete: 0,
+        cel: 0,
+        informatief: true
+      },
+      {
+        id: "Artikel 3",
+        cat: "Strafbepaling",
+        sub: "Strafoplegging",
+        titel: "Straf bepalen",
+        desc: "Bij het bepalen van de straf wordt rekening gehouden met de maximale straf die op het betreffende wetsartikel staat vermeld. De opgelegde straf dient proportioneel te zijn aan het gepleegde strafbare feit en mag verhoogd of verlaagd worden op basis van de omstandigheden van de zaak.",
+        boete: 0,
+        cel: 0,
+        informatief: true
+      },
+      {
+        id: "Artikel 4",
+        cat: "Strafbepaling",
+        sub: "Strafblad & Verjaring",
+        titel: "Strafblad",
+        desc: "Iedere veroordeling kan worden opgenomen op het strafblad van de verdachte. Het strafblad kan worden meegewogen bij toekomstige strafzaken en kan leiden tot een zwaardere straf bij herhaling van strafbare feiten.",
+        boete: 0,
+        cel: 0,
+        informatief: true
+      },
+      {
+        id: "Artikel 5",
+        cat: "Strafbepaling",
+        sub: "Strafblad & Verjaring",
+        titel: "Verjaring van het strafblad",
+        desc: "Een strafblad vervalt niet automatisch. Afhankelijk van de ernst van het gepleegde feit kan een veroordeling gedurende een langere periode zichtbaar blijven voor justitie en opsporingsdiensten.",
+        boete: 0,
+        cel: 0,
+        informatief: true
+      },
+      {
+        id: "Artikel 6",
+        cat: "Strafbepaling",
+        sub: "Strafblad & Verjaring",
+        titel: "Verjaring van een aanhoudingsbevel",
+        desc: "Een uitgevaardigd aanhoudingsbevel blijft geldig totdat de verdachte is aangehouden, het onderzoek wordt beëindigd of justitie besluit het bevel in te trekken. Bij ernstige misdrijven kan een aanhoudingsbevel onbeperkt geldig blijven.",
+        boete: 0,
+        cel: 0,
+        informatief: true
+      },
 
-      { id: "Art. 10", cat: "APV", sub: "Openbare Orde", titel: "TEST", desc: "TEST", boete: 500, cel: 0 },
-      { id: "Art. 11", cat: "APV", sub: "Evenementen", titel: "TEST", desc: "TEST", boete: 750, cel: 5 },
+      // OPENBARE ORDE & GEZAG
+      { id: "Artikel 131", cat: "Openbare Orde", sub: "Openbare Orde", titel: "Verstoring Openbare Orde", desc: "Het opzettelijk verstoren van de openbare orde waardoor gevaar, overlast of onrust ontstaat voor burgers of hulpdiensten.", boete: 1600, cel: 2 },
+      { id: "Artikel 132", cat: "Openbare Orde", sub: "Openbare Orde", titel: "Opruiing", desc: "Het aanzetten van personen tot het plegen van strafbare feiten, geweld of openbare wanordelijkheden.", boete: 5600, cel: 8 },
+      { id: "Artikel 133", cat: "Openbare Orde", sub: "Openbare Orde", titel: "Deelname aan Rellen", desc: "Het deelnemen aan een groep die zich schuldig maakt aan ernstige verstoring van de openbare orde.", boete: 4000, cel: 10 },
+      { id: "Artikel 157", cat: "Openbare Orde", sub: "Algemeen Gevaar", titel: "Brandstichting", desc: "Het opzettelijk veroorzaken van brand met gevaar voor personen of goederen.", boete: 4000, cel: 8 },
+      { id: "Artikel 158", cat: "Openbare Orde", sub: "Algemeen Gevaar", titel: "Veroorzaken van Explosie", desc: "Het tot ontploffing brengen van explosieven waardoor gevaar ontstaat.", boete: 8000, cel: 18 },
+      { id: "Artikel 180", cat: "Openbare Orde", sub: "Openbaar Gezag", titel: "Verzet bij Aanhouding", desc: "Het verzetten tegen een rechtmatige aanhouding door een bevoegde ambtenaar.", boete: 3200, cel: 6 },
+      { id: "Artikel 181", cat: "Openbare Orde", sub: "Openbaar Gezag", titel: "Geweld tegen Ambtenaar", desc: "Het gebruiken van geweld tegen een ambtenaar in functie.", boete: 8000, cel: 19 },
+      { id: "Artikel 184", cat: "Openbare Orde", sub: "Openbaar Gezag", titel: "Negeren Ambtelijk Bevel", desc: "Het niet opvolgen van een wettelijk gegeven bevel van een bevoegde ambtenaar.", boete: 4000, cel: 5 },
+      { id: "Artikel 185", cat: "Openbare Orde", sub: "Openbaar Gezag", titel: "Belediging Ambtenaar in Functie", desc: "Het beledigen van een ambtenaar tijdens de uitvoering van zijn werkzaamheden.", boete: 2000, cel: 2 },
 
-      { id: "Art. 20", cat: "Verkeerswet", sub: "Snelheid", titel: "TEST", desc: "TEST", boete: 1000, cel: 0 },
-      { id: "Art. 21", cat: "Verkeerswet", sub: "Rijbewijs & Voertuig", titel: "TEST", desc: "TEST", boete: 1500, cel: 10 },
+      // GEWELD, LEVEN & VRIJHEID
+      { id: "Artikel 281", cat: "Geweld & Vrijheid", sub: "Vrijheidsdelicten", titel: "Vrijheidsberoving", desc: "Het wederrechtelijk beroven van een persoon van zijn vrijheid.", boete: 8000, cel: 12 },
+      { id: "Artikel 282", cat: "Geweld & Vrijheid", sub: "Vrijheidsdelicten", titel: "Ontvoering", desc: "Het tegen diens wil meenemen of vasthouden van een persoon.", boete: 12000, cel: 18 },
+      { id: "Artikel 283", cat: "Geweld & Vrijheid", sub: "Vrijheidsdelicten", titel: "Gijzeling", desc: "Het vasthouden van een persoon met als doel eisen af te dwingen.", boete: 5600, cel: 15 },
+      { id: "Artikel 285", cat: "Geweld & Vrijheid", sub: "Bedreiging & Stalking", titel: "Bedreiging", desc: "Het bedreigen van een persoon met geweld, ernstig letsel of de dood.", boete: 1600, cel: 6 },
+      { id: "Artikel 285B", cat: "Geweld & Vrijheid", sub: "Bedreiging & Stalking", titel: "Stalking", desc: "Het stelselmatig lastigvallen of volgen van een persoon tegen diens wil.", boete: 8000, cel: 0 },
+      { id: "Artikel 300", cat: "Geweld & Vrijheid", sub: "Mishandeling", titel: "Mishandeling", desc: "Het opzettelijk toebrengen van lichamelijk letsel aan een ander.", boete: 8000, cel: 11 },
+      { id: "Artikel 301", cat: "Geweld & Vrijheid", sub: "Mishandeling", titel: "Zware Mishandeling", desc: "Het opzettelijk veroorzaken van ernstig lichamelijk letsel.", boete: 24000, cel: 24 },
+      { id: "Artikel 302", cat: "Geweld & Vrijheid", sub: "Levensdelicten", titel: "Moord", desc: "Het opzettelijk en met voorbedachte rade doden van een persoon.", boete: 20000, cel: 20 },
+      { id: "Artikel 303", cat: "Geweld & Vrijheid", sub: "Levensdelicten", titel: "Doodslag", desc: "Het opzettelijk doden van een persoon zonder voorbedachte rade.", boete: 12000, cel: 16 },
+      { id: "Artikel 304", cat: "Geweld & Vrijheid", sub: "Levensdelicten", titel: "Poging tot Moord", desc: "Het verrichten van handelingen gericht op het doden van een persoon waarbij de dood niet intreedt.", boete: 5600, cel: 10 },
+      { id: "Artikel 305", cat: "Geweld & Vrijheid", sub: "Levensdelicten", titel: "Poging tot Doodslag", desc: "Het verrichten van handelingen die kunnen leiden tot de dood van een persoon zonder dat de dood daadwerkelijk intreedt.", boete: 60000, cel: 7 },
 
-      { id: "Art. 30", cat: "Strafrecht", sub: "Geweld", titel: "TEST", desc: "TEST", boete: 2500, cel: 15 },
-      { id: "Art. 31", cat: "Strafrecht", sub: "Vermogen & Overvallen", titel: "TEST", desc: "TEST", boete: 5000, cel: 25 },
+      // VERMOGEN & OVERVALLEN
+      { id: "Artikel 310", cat: "Vermogen & Overvallen", sub: "Diefstal & Fraude", titel: "Diefstal", desc: "Het wegnemen van goederen die eigendom zijn van een ander.", boete: 1600, cel: 5 },
+      { id: "Artikel 311", cat: "Vermogen & Overvallen", sub: "Diefstal & Fraude", titel: "Gekwalificeerde Diefstal", desc: "Diefstal gepleegd met geweld, bedreiging of in georganiseerd verband.", boete: 4000, cel: 10 },
+      { id: "Artikel 312", cat: "Vermogen & Overvallen", sub: "Diefstal & Fraude", titel: "Gewapende Diefstal", desc: "Diefstal gepleegd onder bedreiging van een vuurwapen.", boete: 7200, cel: 10 },
+      { id: "Artikel 321", cat: "Vermogen & Overvallen", sub: "Diefstal & Fraude", titel: "Verduistering", desc: "Het wederrechtelijk toe-eigenen van goederen die rechtmatig verkregen zijn.", boete: 12000, cel: 14 },
+      { id: "Artikel 326", cat: "Vermogen & Overvallen", sub: "Diefstal & Fraude", titel: "Oplichting", desc: "Het verkrijgen van goederen, geld of diensten door misleiding.", boete: 20000, cel: 0 },
+      { id: "Artikel 350", cat: "Vermogen & Overvallen", sub: "Vernieling", titel: "Vandalisme", desc: "Het opzettelijk beschadigen of vernielen van eigendommen.", boete: 8000, cel: 10 },
+      { id: "Artikel 402", cat: "Vermogen & Overvallen", sub: "Financieel", titel: "Witwassen", desc: "Het verbergen of legaliseren van crimineel verkregen vermogen.", boete: 4000, cel: 12 },
+      { id: "Artikel 600", cat: "Vermogen & Overvallen", sub: "Overvallen", titel: "Winkeloverval", desc: "Het onder bedreiging of geweld plegen van een overval op een winkel.", boete: 6400, cel: 18 },
+      { id: "Artikel 601", cat: "Vermogen & Overvallen", sub: "Overvallen", titel: "Juwelieroverval", desc: "Het onder bedreiging of geweld plegen van een overval op een juwelier.", boete: 8000, cel: 22 },
+      { id: "Artikel 602", cat: "Vermogen & Overvallen", sub: "Overvallen", titel: "Bankoverval", desc: "Het onder bedreiging of geweld plegen van een overval op een bank.", boete: 12000, cel: 24 },
+      { id: "Artikel 603", cat: "Vermogen & Overvallen", sub: "Overvallen", titel: "Overval op Overheidsinstelling", desc: "Het plegen van een overval op een overheidsgebouw of overheidsdienst.", boete: 160000, cel: 32 },
 
-      { id: "Art. 40", cat: "Wapens & Drugs", sub: "Wapens", titel: "TEST", desc: "TEST", boete: 10000, cel: 30 },
-      { id: "Art. 41", cat: "Wapens & Drugs", sub: "Verdovende Middelen", titel: "TEST", desc: "TEST", boete: 4000, cel: 20 },
+      // WAPENS, DRUGS & ORGANISATIE
+      { id: "Artikel 26", cat: "Wapens, Drugs & Organisatie", sub: "Wapenwet", titel: "Illegaal Wapenbezit", desc: "Het bezitten van een vuurwapen zonder geldige vergunning.", boete: 16000, cel: 16 },
+      { id: "Artikel 27", cat: "Wapens, Drugs & Organisatie", sub: "Wapenwet", titel: "Handel in Illegale Wapens", desc: "Het produceren, verkopen of vervoeren van illegale wapens.", boete: 60000, cel: 28 },
+      { id: "Artikel 28", cat: "Wapens, Drugs & Organisatie", sub: "Wapenwet", titel: "Bezit van Automatische Vuurwapens", desc: "Het bezitten van automatische vuurwapens zonder toestemming.", boete: 12000, cel: 16 },
+      { id: "Artikel 29", cat: "Wapens, Drugs & Organisatie", sub: "Wapenwet", titel: "Gebruik van Illegale Vuurwapens", desc: "Het gebruiken van een illegaal vuurwapen tijdens een strafbaar feit.", boete: 4000, cel: 12 },
+      { id: "Artikel 400", cat: "Wapens, Drugs & Organisatie", sub: "Opiumwet", titel: "Bezit van Harddrugs", desc: "Het bezitten van verboden verdovende middelen.", boete: 800, cel: 6 },
+      { id: "Artikel 401", cat: "Wapens, Drugs & Organisatie", sub: "Opiumwet", titel: "Handel in Harddrugs", desc: "Het produceren, vervoeren of verkopen van verdovende middelen.", boete: 1200, cel: 10 },
+      { id: "Artikel 700", cat: "Wapens, Drugs & Organisatie", sub: "Georganiseerde Misdaad", titel: "Criminele Organisatie", desc: "Het deelnemen aan een organisatie met als doel het plegen van strafbare feiten.", boete: 5600, cel: 14 },
+      { id: "Artikel 701", cat: "Wapens, Drugs & Organisatie", sub: "Georganiseerde Misdaad", titel: "Leidinggeven aan Criminele Organisatie", desc: "Het leiden of aansturen van een criminele organisatie.", boete: 12000, cel: 20 },
+      { id: "Artikel 702", cat: "Wapens, Drugs & Organisatie", sub: "Georganiseerde Misdaad", titel: "Terroristische Handelingen", desc: "Het plegen van handelingen gericht op het ontwrichten van de samenleving of overheid.", boete: 40000, cel: 36 },
 
-      { id: "Art. 50", cat: "Hulpdiensten", sub: "Protocollen", titel: "TEST", desc: "TEST", boete: 1250, cel: 10 }
+      // VERKEER
+      { id: "Artikel 500", cat: "Verkeer", sub: "Rijgedrag", titel: "Roekeloos Rijgedrag", desc: "Het veroorzaken van gevaar op de openbare weg door onverantwoord rijgedrag.", boete: 1200, cel: 5 }
     ];
 
     let activeMainCat = "Alles";
@@ -124,6 +262,29 @@
 
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("open");
+    }
+
+    function getActiveMenuObj() {
+      for (const group of menuStructuur) {
+        const found = group.items.find(i => i.id === activeMainCat);
+        if (found) return found;
+      }
+      return menuStructuur[0].items[0];
+    }
+
+    function renderHeaderAndIntro() {
+      const item = getActiveMenuObj();
+      document.getElementById("pageTitle").textContent = item.naam;
+      document.getElementById("pageDesc").textContent = item.desc;
+
+      const introBox = document.getElementById("introBox");
+      if (item.inleiding) {
+        introBox.innerHTML = item.inleiding;
+        introBox.style.display = "block";
+      } else {
+        introBox.style.display = "none";
+        introBox.innerHTML = "";
+      }
     }
 
     function renderSidebar() {
@@ -147,9 +308,8 @@
           btn.onclick = () => {
             activeMainCat = item.id;
             activeSubCat = "Alle";
-            document.getElementById("pageTitle").textContent = item.naam;
-            document.getElementById("pageDesc").textContent = item.desc;
             document.getElementById("sidebar").classList.remove("open");
+            renderHeaderAndIntro();
             renderSidebar();
             renderSubTabs();
             renderArticles();
@@ -202,6 +362,19 @@
         const isSel = selectedSet.has(a.id);
         const card = document.createElement("div");
         card.className = `article-card ${isSel ? "selected" : ""}`;
+
+        const rightSideHtml = a.informatief
+          ? `<div class="art-right info-only"><span class="info-pill">Algemene Bepaling</span></div>`
+          : `
+            <div class="art-right">
+              <div class="punishment-fine">€ ${a.boete.toLocaleString("nl-NL")}</div>
+              <div class="punishment-jail">${a.cel > 0 ? a.cel + " maanden cel" : "Alleen geldboete"}</div>
+              <button class="btn-select" onclick="toggleSelect('${a.id}')">
+                ${isSel ? "✓ Geselecteerd" : "+ Selecteer"}
+              </button>
+            </div>
+          `;
+
         card.innerHTML = `
           <div class="art-left">
             <div class="art-meta">
@@ -211,13 +384,7 @@
             <div class="art-title">${a.titel}</div>
             <div class="art-desc">${a.desc}</div>
           </div>
-          <div class="art-right">
-            <div class="punishment-fine">€ ${a.boete.toLocaleString("nl-NL")}</div>
-            <div class="punishment-jail">${a.cel} maanden cel</div>
-            <button class="btn-select" onclick="toggleSelect('${a.id}')">
-              ${isSel ? "✓ Geselecteerd" : "+ Selecteer"}
-            </button>
-          </div>
+          ${rightSideHtml}
         `;
         listEl.appendChild(card);
       });
@@ -248,13 +415,13 @@
     }
 
     function copyMeos() {
-      if (selectedSet.size === 0) return alert("Selecteer eerst een artikel.");
+      if (selectedSet.size === 0) return alert("Selecteer eerst een strafbaar feit.");
       let out = ["=== OLYMPUS MEOS OVERZICHT ==="];
       let fine = 0, jail = 0;
       selectedSet.forEach(id => {
         const item = artikelen.find(a => a.id === id);
         if (item) {
-          out.push(`${item.id} - ${item.titel} (€ ${item.boete} | ${item.cel} mnd)`);
+          out.push(`${item.id} - ${item.titel} (€ ${item.boete.toLocaleString("nl-NL")} | ${item.cel} mnd)`);
           fine += item.boete;
           jail += item.cel;
         }
@@ -267,6 +434,7 @@
     document.getElementById("searchInput").addEventListener("input", renderArticles);
 
     // Initialisatie
+    renderHeaderAndIntro();
     renderSidebar();
     renderSubTabs();
     renderArticles();
