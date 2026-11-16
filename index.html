@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Olympus Roleplay — Officieel Wetboek</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ZIJBALK MENU -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo">Ω</div>
+      <div class="brand-text">
+        <h2>OLYMPUS RP</h2>
+        <span>Wetboek & Regelgeving</span>
+      </div>
+    </div>
+
+    <div class="nav-scroll" id="sidebarNav">
+      <!-- Wordt gevuld vanuit JavaScript -->
+    </div>
+
+    <div class="sidebar-footer">
+      <span class="status-dot"></span> Stad Status: <strong>Actief</strong>
+    </div>
+  </aside>
+
+  <!-- HOOFDSCHERM -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <button class="mobile-menu-btn" onclick="toggleSidebar()">☰ Menu</button>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Zoek op artikelnummer of trefwoord..." />
+      </div>
+      <div class="version-tag">v1.0 • TEST MODUS</div>
+    </header>
+
+    <main class="content-area">
+      <div class="page-header">
+        <h1 id="pageTitle">Overzicht Alle Wetten</h1>
+        <p id="pageDesc">Selecteer een hoofdstuk in het menu links of filter op subcategorie.</p>
+      </div>
+
+      <div class="sub-tabs" id="subTabs"></div>
+
+      <div class="articles-list" id="articlesList"></div>
+    </main>
+  </div>
+
+  <!-- ONDERBALK CALCULATOR -->
+  <div class="calc-bar">
+    <div class="calc-info">
+      <div class="calc-stat">
+        <small>Geselecteerd</small>
+        <strong id="selCount">0 artikelen</strong>
+      </div>
+      <div class="calc-stat">
+        <small>Totale Boete</small>
+        <strong class="gold" id="selFine">€ 0</strong>
+      </div>
+      <div class="calc-stat">
+        <small>Totale Celstraf</small>
+        <strong id="selJail">0 maanden</strong>
+      </div>
+    </div>
+    <div class="calc-btns">
+      <button class="btn-reset" onclick="resetCalc()">Wissen</button>
+      <button class="btn-meos" onclick="copyMeos()">Kopieer MEOS</button>
+    </div>
+  </div>
+
+  <script>
+    // HOOFDMENU STRUCTUUR
+    const menuStructuur = [
+      {
+        groep: "Algemeen",
+        items: [
+          { id: "Alles", naam: "Alle Artikelen", desc: "Volledig overzicht van alle geldende artikelen in Olympus." },
+          { id: "Serverregels", naam: "Serverregels (OOC)", desc: "Algemene gedragsregels en roleplay-richtlijnen voor alle spelers." }
+        ]
+      },
+      {
+        groep: "Wetboeken (IC)",
+        items: [
+          { id: "APV", naam: "APV & Openbare Orde", desc: "Algemene Plaatselijke Verordening binnen de stadsgrenzen van Olympus." },
+          { id: "Verkeerswet", naam: "Verkeerswet", desc: "Regels omtrent voertuigen, snelheid, rijbewijzen en verkeersveiligheid." },
+          { id: "Strafrecht", naam: "Wetboek van Strafrecht", desc: "Geweldsdelicten, vermogensdelicten en misdrijven tegen burgers of overheid." },
+          { id: "Wapens & Drugs", naam: "Wapen- & Drugswet", desc: "Wetgeving rondom verboden wapens, munitie en verdovende middelen." }
+        ]
+      },
+      {
+        groep: "Overheid & Hulpdiensten",
+        items: [
+          { id: "Hulpdiensten", naam: "Politie, Ambulance & ANWB", desc: "Bevoegdheden, protocollen en bescherming van hulpdiensten." }
+        ]
+      }
+    ];
+
+    // ARTIKELEN (ALLEMAAL OP TEST GEZET)
+    const artikelen = [
+      { id: "Art. 1", cat: "Serverregels", sub: "Algemeen", titel: "TEST", desc: "TEST", boete: 0, cel: 0 },
+      { id: "Art. 2", cat: "Serverregels", sub: "Roleplay", titel: "TEST", desc: "TEST", boete: 0, cel: 0 },
+
+      { id: "Art. 10", cat: "APV", sub: "Openbare Orde", titel: "TEST", desc: "TEST", boete: 500, cel: 0 },
+      { id: "Art. 11", cat: "APV", sub: "Evenementen", titel: "TEST", desc: "TEST", boete: 750, cel: 5 },
+
+      { id: "Art. 20", cat: "Verkeerswet", sub: "Snelheid", titel: "TEST", desc: "TEST", boete: 1000, cel: 0 },
+      { id: "Art. 21", cat: "Verkeerswet", sub: "Rijbewijs & Voertuig", titel: "TEST", desc: "TEST", boete: 1500, cel: 10 },
+
+      { id: "Art. 30", cat: "Strafrecht", sub: "Geweld", titel: "TEST", desc: "TEST", boete: 2500, cel: 15 },
+      { id: "Art. 31", cat: "Strafrecht", sub: "Vermogen & Overvallen", titel: "TEST", desc: "TEST", boete: 5000, cel: 25 },
+
+      { id: "Art. 40", cat: "Wapens & Drugs", sub: "Wapens", titel: "TEST", desc: "TEST", boete: 10000, cel: 30 },
+      { id: "Art. 41", cat: "Wapens & Drugs", sub: "Verdovende Middelen", titel: "TEST", desc: "TEST", boete: 4000, cel: 20 },
+
+      { id: "Art. 50", cat: "Hulpdiensten", sub: "Protocollen", titel: "TEST", desc: "TEST", boete: 1250, cel: 10 }
+    ];
+
+    let activeMainCat = "Alles";
+    let activeSubCat = "Alle";
+    let selectedSet = new Set();
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("open");
+    }
+
+    function renderSidebar() {
+      const navEl = document.getElementById("sidebarNav");
+      navEl.innerHTML = "";
+
+      menuStructuur.forEach(group => {
+        const title = document.createElement("div");
+        title.className = "nav-section-title";
+        title.textContent = group.groep;
+        navEl.appendChild(title);
+
+        group.items.forEach(item => {
+          const count = item.id === "Alles"
+            ? artikelen.length
+            : artikelen.filter(a => a.cat === item.id).length;
+
+          const btn = document.createElement("button");
+          btn.className = `nav-item ${activeMainCat === item.id ? "active" : ""}`;
+          btn.innerHTML = `<span>${item.naam}</span><span class="count-pill">${count}</span>`;
+          btn.onclick = () => {
+            activeMainCat = item.id;
+            activeSubCat = "Alle";
+            document.getElementById("pageTitle").textContent = item.naam;
+            document.getElementById("pageDesc").textContent = item.desc;
+            document.getElementById("sidebar").classList.remove("open");
+            renderSidebar();
+            renderSubTabs();
+            renderArticles();
+          };
+          navEl.appendChild(btn);
+        });
+      });
+    }
+
+    function renderSubTabs() {
+      const subTabsEl = document.getElementById("subTabs");
+      const relevant = activeMainCat === "Alles"
+        ? artikelen
+        : artikelen.filter(a => a.cat === activeMainCat);
+
+      const subs = ["Alle", ...new Set(relevant.map(a => a.sub))];
+      subTabsEl.innerHTML = "";
+
+      subs.forEach(sub => {
+        const btn = document.createElement("button");
+        btn.className = `sub-tab ${activeSubCat === sub ? "active" : ""}`;
+        btn.textContent = sub;
+        btn.onclick = () => {
+          activeSubCat = sub;
+          renderSubTabs();
+          renderArticles();
+        };
+        subTabsEl.appendChild(btn);
+      });
+    }
+
+    function renderArticles() {
+      const query = document.getElementById("searchInput").value.toLowerCase().trim();
+      const listEl = document.getElementById("articlesList");
+
+      const filtered = artikelen.filter(a => {
+        const matchMain = activeMainCat === "Alles" || a.cat === activeMainCat;
+        const matchSub = activeSubCat === "Alle" || a.sub === activeSubCat;
+        const matchSearch =
+          a.id.toLowerCase().includes(query) ||
+          a.titel.toLowerCase().includes(query) ||
+          a.desc.toLowerCase().includes(query) ||
+          a.cat.toLowerCase().includes(query);
+        return matchMain && matchSub && matchSearch;
+      });
+
+      listEl.innerHTML = "";
+
+      filtered.forEach(a => {
+        const isSel = selectedSet.has(a.id);
+        const card = document.createElement("div");
+        card.className = `article-card ${isSel ? "selected" : ""}`;
+        card.innerHTML = `
+          <div class="art-left">
+            <div class="art-meta">
+              <span class="art-badge">${a.id}</span>
+              <span class="art-subcat">${a.cat} • ${a.sub}</span>
+            </div>
+            <div class="art-title">${a.titel}</div>
+            <div class="art-desc">${a.desc}</div>
+          </div>
+          <div class="art-right">
+            <div class="punishment-fine">€ ${a.boete.toLocaleString("nl-NL")}</div>
+            <div class="punishment-jail">${a.cel} maanden cel</div>
+            <button class="btn-select" onclick="toggleSelect('${a.id}')">
+              ${isSel ? "✓ Geselecteerd" : "+ Selecteer"}
+            </button>
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    function toggleSelect(id) {
+      if (selectedSet.has(id)) selectedSet.delete(id);
+      else selectedSet.add(id);
+      updateCalc();
+      renderArticles();
+    }
+
+    function updateCalc() {
+      let fine = 0, jail = 0;
+      selectedSet.forEach(id => {
+        const item = artikelen.find(a => a.id === id);
+        if (item) { fine += item.boete; jail += item.cel; }
+      });
+      document.getElementById("selCount").textContent = `${selectedSet.size} artikelen`;
+      document.getElementById("selFine").textContent = `€ ${fine.toLocaleString("nl-NL")}`;
+      document.getElementById("selJail").textContent = `${jail} maanden`;
+    }
+
+    function resetCalc() {
+      selectedSet.clear();
+      updateCalc();
+      renderArticles();
+    }
+
+    function copyMeos() {
+      if (selectedSet.size === 0) return alert("Selecteer eerst een artikel.");
+      let out = ["=== OLYMPUS MEOS OVERZICHT ==="];
+      let fine = 0, jail = 0;
+      selectedSet.forEach(id => {
+        const item = artikelen.find(a => a.id === id);
+        if (item) {
+          out.push(`${item.id} - ${item.titel} (€ ${item.boete} | ${item.cel} mnd)`);
+          fine += item.boete;
+          jail += item.cel;
+        }
+      });
+      out.push(`TOTAAL: € ${fine.toLocaleString("nl-NL")} | ${jail} maanden`);
+      navigator.clipboard.writeText(out.join("\n"));
+      alert("MEOS-overzicht gekopieerd!");
+    }
+
+    document.getElementById("searchInput").addEventListener("input", renderArticles);
+
+    // Initialisatie
+    renderSidebar();
+    renderSubTabs();
+    renderArticles();
+  </script>
+</body>
+</html>
