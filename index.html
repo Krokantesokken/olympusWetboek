@@ -11,7 +11,11 @@
   <!-- ZIJBALK MENU -->
   <aside class="sidebar" id="sidebar">
     <div class="brand">
-      <div class="brand-logo">Ω</div>
+      <!-- JOUW LOGO HIER: Pas de src aan naar de directe link van jouw logo-afbeelding (bijv. Imgur of Discord CDN) -->
+      <img src="Afbeeldingen/logo.png" alt="Olympus Logo" class="brand-logo-img" onerror="this.style.display='none'; document.getElementById('fallbackLogo').style.display='flex';" />
+      <!-- Fallback letter als je geen logo-url invult -->
+      <div id="fallbackLogo" class="brand-logo" style="display: none;">Ω</div>
+      
       <div class="brand-text">
         <h2>OLYMPUS RP</h2>
         <span>Officieel Wetboek</span>
@@ -34,7 +38,7 @@
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Zoek op artikelnummer of trefwoord (bijv. 302, wapen, overval)..." />
       </div>
-      <div class="version-tag">v1.2 • OFFICIEEL</div>
+      <div class="version-tag">v1.3 • LIVE</div>
     </header>
 
     <main class="content-area">
@@ -52,11 +56,34 @@
     </main>
   </div>
 
+  <!-- WINKELMANDJE / MEOS MODAL (POP-UP) -->
+  <div class="modal-overlay" id="meosModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🛒 Geselecteerde Artikelen (MEOS Winkelmandje)</h3>
+        <button class="modal-close" onclick="toggleMeosModal()">✕</button>
+      </div>
+      <div class="modal-body" id="meosModalList">
+        <!-- Wordt dynamisch gevuld -->
+      </div>
+      <div class="modal-footer">
+        <div class="modal-totals">
+          <span>Totaal Boete: <strong id="modalFine">€ 0</strong></span>
+          <span>Totaal Cel: <strong id="modalJail">0 maanden</strong></span>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-reset" onclick="resetCalc(); toggleMeosModal();">Wissen</button>
+          <button class="btn-meos" onclick="confirmCopyMeos()">Kopieer naar Klembord</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ONDERBALK CALCULATOR -->
   <div class="calc-bar">
     <div class="calc-info">
       <div class="calc-stat">
-        <small>Geselecteerd</small>
+        <small>Winkelmandje</small>
         <strong id="selCount">0 artikelen</strong>
       </div>
       <div class="calc-stat">
@@ -70,7 +97,7 @@
     </div>
     <div class="calc-btns">
       <button class="btn-reset" onclick="resetCalc()">Wissen</button>
-      <button class="btn-meos" onclick="copyMeos()">Kopieer MEOS</button>
+      <button class="btn-meos" onclick="toggleMeosModal()">Bekijk Winkelmandje</button>
     </div>
   </div>
 
@@ -140,9 +167,8 @@
       }
     ];
 
-    // ARTIKELEN (ECHTE WETTEN MET 20% VERMINDERING)
+    // ARTIKELEN
     const artikelen = [
-      // STRAFBAPALING (Art. 1 - 6)
       {
         id: "Artikel 1",
         cat: "Strafbepaling",
@@ -203,8 +229,6 @@
         cel: 0,
         informatief: true
       },
-
-      // OPENBARE ORDE & GEZAG
       { id: "Artikel 131", cat: "Openbare Orde", sub: "Openbare Orde", titel: "Verstoring Openbare Orde", desc: "Het opzettelijk verstoren van de openbare orde waardoor gevaar, overlast of onrust ontstaat voor burgers of hulpdiensten.", boete: 1600, cel: 2 },
       { id: "Artikel 132", cat: "Openbare Orde", sub: "Openbare Orde", titel: "Opruiing", desc: "Het aanzetten van personen tot het plegen van strafbare feiten, geweld of openbare wanordelijkheden.", boete: 5600, cel: 8 },
       { id: "Artikel 133", cat: "Openbare Orde", sub: "Openbare Orde", titel: "Deelname aan Rellen", desc: "Het deelnemen aan een groep die zich schuldig maakt aan ernstige verstoring van de openbare orde.", boete: 4000, cel: 10 },
@@ -214,8 +238,6 @@
       { id: "Artikel 181", cat: "Openbare Orde", sub: "Openbaar Gezag", titel: "Geweld tegen Ambtenaar", desc: "Het gebruiken van geweld tegen een ambtenaar in functie.", boete: 8000, cel: 19 },
       { id: "Artikel 184", cat: "Openbare Orde", sub: "Openbaar Gezag", titel: "Negeren Ambtelijk Bevel", desc: "Het niet opvolgen van een wettelijk gegeven bevel van een bevoegde ambtenaar.", boete: 4000, cel: 5 },
       { id: "Artikel 185", cat: "Openbare Orde", sub: "Openbaar Gezag", titel: "Belediging Ambtenaar in Functie", desc: "Het beledigen van een ambtenaar tijdens de uitvoering van zijn werkzaamheden.", boete: 2000, cel: 2 },
-
-      // GEWELD, LEVEN & VRIJHEID
       { id: "Artikel 281", cat: "Geweld & Vrijheid", sub: "Vrijheidsdelicten", titel: "Vrijheidsberoving", desc: "Het wederrechtelijk beroven van een persoon van zijn vrijheid.", boete: 8000, cel: 12 },
       { id: "Artikel 282", cat: "Geweld & Vrijheid", sub: "Vrijheidsdelicten", titel: "Ontvoering", desc: "Het tegen diens wil meenemen of vasthouden van een persoon.", boete: 12000, cel: 18 },
       { id: "Artikel 283", cat: "Geweld & Vrijheid", sub: "Vrijheidsdelicten", titel: "Gijzeling", desc: "Het vasthouden van een persoon met als doel eisen af te dwingen.", boete: 5600, cel: 15 },
@@ -227,8 +249,6 @@
       { id: "Artikel 303", cat: "Geweld & Vrijheid", sub: "Levensdelicten", titel: "Doodslag", desc: "Het opzettelijk doden van een persoon zonder voorbedachte rade.", boete: 12000, cel: 16 },
       { id: "Artikel 304", cat: "Geweld & Vrijheid", sub: "Levensdelicten", titel: "Poging tot Moord", desc: "Het verrichten van handelingen gericht op het doden van een persoon waarbij de dood niet intreedt.", boete: 5600, cel: 10 },
       { id: "Artikel 305", cat: "Geweld & Vrijheid", sub: "Levensdelicten", titel: "Poging tot Doodslag", desc: "Het verrichten van handelingen die kunnen leiden tot de dood van een persoon zonder dat de dood daadwerkelijk intreedt.", boete: 60000, cel: 7 },
-
-      // VERMOGEN & OVERVALLEN
       { id: "Artikel 310", cat: "Vermogen & Overvallen", sub: "Diefstal & Fraude", titel: "Diefstal", desc: "Het wegnemen van goederen die eigendom zijn van een ander.", boete: 1600, cel: 5 },
       { id: "Artikel 311", cat: "Vermogen & Overvallen", sub: "Diefstal & Fraude", titel: "Gekwalificeerde Diefstal", desc: "Diefstal gepleegd met geweld, bedreiging of in georganiseerd verband.", boete: 4000, cel: 10 },
       { id: "Artikel 312", cat: "Vermogen & Overvallen", sub: "Diefstal & Fraude", titel: "Gewapende Diefstal", desc: "Diefstal gepleegd onder bedreiging van een vuurwapen.", boete: 7200, cel: 10 },
@@ -240,8 +260,6 @@
       { id: "Artikel 601", cat: "Vermogen & Overvallen", sub: "Overvallen", titel: "Juwelieroverval", desc: "Het onder bedreiging of geweld plegen van een overval op een juwelier.", boete: 8000, cel: 22 },
       { id: "Artikel 602", cat: "Vermogen & Overvallen", sub: "Overvallen", titel: "Bankoverval", desc: "Het onder bedreiging of geweld plegen van een overval op een bank.", boete: 12000, cel: 24 },
       { id: "Artikel 603", cat: "Vermogen & Overvallen", sub: "Overvallen", titel: "Overval op Overheidsinstelling", desc: "Het plegen van een overval op een overheidsgebouw of overheidsdienst.", boete: 160000, cel: 32 },
-
-      // WAPENS, DRUGS & ORGANISATIE
       { id: "Artikel 26", cat: "Wapens, Drugs & Organisatie", sub: "Wapenwet", titel: "Illegaal Wapenbezit", desc: "Het bezitten van een vuurwapen zonder geldige vergunning.", boete: 16000, cel: 16 },
       { id: "Artikel 27", cat: "Wapens, Drugs & Organisatie", sub: "Wapenwet", titel: "Handel in Illegale Wapens", desc: "Het produceren, verkopen of vervoeren van illegale wapens.", boete: 60000, cel: 28 },
       { id: "Artikel 28", cat: "Wapens, Drugs & Organisatie", sub: "Wapenwet", titel: "Bezit van Automatische Vuurwapens", desc: "Het bezitten van automatische vuurwapens zonder toestemming.", boete: 12000, cel: 16 },
@@ -251,8 +269,6 @@
       { id: "Artikel 700", cat: "Wapens, Drugs & Organisatie", sub: "Georganiseerde Misdaad", titel: "Criminele Organisatie", desc: "Het deelnemen aan een organisatie met als doel het plegen van strafbare feiten.", boete: 5600, cel: 14 },
       { id: "Artikel 701", cat: "Wapens, Drugs & Organisatie", sub: "Georganiseerde Misdaad", titel: "Leidinggeven aan Criminele Organisatie", desc: "Het leiden of aansturen van een criminele organisatie.", boete: 12000, cel: 20 },
       { id: "Artikel 702", cat: "Wapens, Drugs & Organisatie", sub: "Georganiseerde Misdaad", titel: "Terroristische Handelingen", desc: "Het plegen van handelingen gericht op het ontwrichten van de samenleving of overheid.", boete: 40000, cel: 36 },
-
-      // VERKEER
       { id: "Artikel 500", cat: "Verkeer", sub: "Rijgedrag", titel: "Roekeloos Rijgedrag", desc: "Het veroorzaken van gevaar op de openbare weg door onverantwoord rijgedrag.", boete: 1200, cel: 5 }
     ];
 
@@ -262,6 +278,73 @@
 
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("open");
+    }
+
+    function toggleMeosModal() {
+      const modal = document.getElementById("meosModal");
+      modal.classList.toggle("open");
+      if (modal.classList.contains("open")) {
+        renderModalList();
+      }
+    }
+
+    function renderModalList() {
+      const listContainer = document.getElementById("meosModalList");
+      listContainer.innerHTML = "";
+
+      if (selectedSet.size === 0) {
+        listContainer.innerHTML = `<p class="modal-empty">Je winkelmandje is leeg. Selecteer artikelen in het wetboek.</p>`;
+        document.getElementById("modalFine").textContent = "€ 0";
+        document.getElementById("modalJail").textContent = "0 maanden";
+        return;
+      }
+
+      let totalFine = 0;
+      let totalJail = 0;
+
+      selectedSet.forEach(id => {
+        const item = artikelen.find(a => a.id === id);
+        if (item) {
+          totalFine += item.boete;
+          totalJail += item.cel;
+
+          const row = document.createElement("div");
+          row.className = "modal-item-row";
+          row.innerHTML = `
+            <div class="modal-item-info">
+              <strong>${item.id} - ${item.titel}</strong>
+              <small>${item.cat}</small>
+            </div>
+            <div class="modal-item-punishment">
+              <span>€ ${item.boete.toLocaleString("nl-NL")}</span>
+              <span>${item.cel} mnd</span>
+              <button class="modal-remove-btn" onclick="toggleSelect('${item.id}'); renderModalList();">✕</button>
+            </div>
+          `;
+          listContainer.appendChild(row);
+        }
+      });
+
+      document.getElementById("modalFine").textContent = `€ ${totalFine.toLocaleString("nl-NL")}`;
+      document.getElementById("modalJail").textContent = `${totalJail} maanden`;
+    }
+
+    function confirmCopyMeos() {
+      if (selectedSet.size === 0) return alert("Je winkelmandje is leeg.");
+      let out = ["=== OLYMPUS STRAFZAAK / WINKELMANDJE ==="];
+      let fine = 0, jail = 0;
+      selectedSet.forEach(id => {
+        const item = artikelen.find(a => a.id === id);
+        if (item) {
+          out.push(`- ${item.id}: ${item.titel} (€ ${item.boete.toLocaleString("nl-NL")} | ${item.cel} mnd)`);
+          fine += item.boete;
+          jail += item.cel;
+        }
+      });
+      out.push(`TOTAAL: € ${fine.toLocaleString("nl-NL")} | ${jail} maanden`);
+      navigator.clipboard.writeText(out.join("\n"));
+      alert("Overzicht gekopieerd naar klembord!");
+      toggleMeosModal();
     }
 
     function getActiveMenuObj() {
@@ -412,23 +495,6 @@
       selectedSet.clear();
       updateCalc();
       renderArticles();
-    }
-
-    function copyMeos() {
-      if (selectedSet.size === 0) return alert("Selecteer eerst een strafbaar feit.");
-      let out = ["=== OLYMPUS MEOS OVERZICHT ==="];
-      let fine = 0, jail = 0;
-      selectedSet.forEach(id => {
-        const item = artikelen.find(a => a.id === id);
-        if (item) {
-          out.push(`${item.id} - ${item.titel} (€ ${item.boete.toLocaleString("nl-NL")} | ${item.cel} mnd)`);
-          fine += item.boete;
-          jail += item.cel;
-        }
-      });
-      out.push(`TOTAAL: € ${fine.toLocaleString("nl-NL")} | ${jail} maanden`);
-      navigator.clipboard.writeText(out.join("\n"));
-      alert("MEOS-overzicht gekopieerd!");
     }
 
     document.getElementById("searchInput").addEventListener("input", renderArticles);
